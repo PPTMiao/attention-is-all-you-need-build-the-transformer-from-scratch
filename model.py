@@ -447,8 +447,31 @@ def run_transformer_forward(src_ids, tgt_ids, model_params, num_heads, pad_id):
     logits = apply_final_output_projection(decoder_output, model_params['output_projection'])
     return apply_log_softmax_over_vocab(logits)
 
-# Step 52 - init_encoder_layer_parameters (not yet solved)
-# TODO: implement
+# Step 52 - init_encoder_layer_parameters
+import torch
+import math
+
+def init_encoder_layer_parameters(d_model, num_heads, d_ff):
+    """Return a dict of leaf tensors with requires_grad=True for one encoder layer."""
+    # TODO: allocate w_q, w_k, w_v, w_o, w1, b1, w2, b2, attn_gamma, attn_beta, ffn_gamma, ffn_beta.
+    def init_weight(d1,d2):
+        w=torch.randn(d1,d2, dtype=torch.float32)/math.sqrt(d1)
+        return w.requires_grad_()
+    def init_bias(d):
+        return torch.zeros((d,), dtype=torch.float32, requires_grad=True)
+    return {'w_q': init_weight(d_model, d_model), 
+            'w_k': init_weight(d_model, d_model), 
+            'w_v': init_weight(d_model, d_model), 
+            'w_o': init_weight(d_model,d_model), 
+            'w1': init_weight(d_model, d_ff),
+            'b1': init_bias(d_ff),
+            'w2': init_weight(d_ff, d_model),
+            'b2': init_bias(d_model),
+            'attn_gamma': torch.tensor(torch.ones((d_model,)), dtype=torch.float32, requires_grad=True),
+            'attn_beta': torch.tensor(torch.zeros((d_model,)), dtype=torch.float32, requires_grad=True),
+            'ffn_gamma': torch.tensor(torch.ones((d_model,)), dtype=torch.float32, requires_grad=True),
+            'ffn_beta': torch.tensor(torch.zeros((d_model,)), dtype=torch.float32, requires_grad=True)
+            }
 
 # Step 53 - init_decoder_layer_parameters (not yet solved)
 # TODO: implement
