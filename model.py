@@ -473,8 +473,39 @@ def init_encoder_layer_parameters(d_model, num_heads, d_ff):
             'ffn_beta': torch.tensor(torch.zeros((d_model,)), dtype=torch.float32, requires_grad=True)
             }
 
-# Step 53 - init_decoder_layer_parameters (not yet solved)
-# TODO: implement
+# Step 53 - init_decoder_layer_parameters
+import torch
+import math
+
+def init_decoder_layer_parameters(d_model, num_heads, d_ff):
+    # TODO: return a dict of requires_grad tensors for one decoder layer
+    def init_weight(d1,d2):
+        w=torch.randn(d1,d2,dtype=torch.float32)/math.sqrt(d1)
+        return w.requires_grad_()
+    def init_bias(d):
+        return torch.zeros((d,),dtype=torch.float32, requires_grad=True)
+    def init_gamma(d):
+        return torch.ones((d,),dtype=torch.float32, requires_grad=True)
+    return {
+            'w_q_self': init_weight(d_model, d_model),
+            'w_k_self': init_weight(d_model, d_model),
+            'w_v_self': init_weight(d_model, d_model),
+            'w_o_self': init_weight(d_model, d_model),
+            'w_q_cross': init_weight(d_model, d_model),
+            'w_k_cross': init_weight(d_model, d_model),
+            'w_v_cross': init_weight(d_model, d_model),
+            'w_o_cross': init_weight(d_model, d_model),
+            'w1': init_weight(d_model, d_ff),
+            'b1': init_bias(d_ff),
+            'w2': init_weight(d_ff, d_model),
+            'b2': init_bias(d_model),
+            'self_gamma': init_gamma(d_model),
+            'self_beta': init_bias(d_model),
+            'cross_gamma': init_gamma(d_model),
+            'cross_beta': init_bias(d_model),
+            'ffn_gamma': init_gamma(d_model),
+            'ffn_beta': init_bias(d_model)
+            }
 
 # Step 54 - init_embedding_and_projection_parameters (not yet solved)
 # TODO: implement
