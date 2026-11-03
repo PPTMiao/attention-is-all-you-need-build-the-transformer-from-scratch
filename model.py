@@ -426,8 +426,26 @@ def apply_log_softmax_over_vocab(logits):
     # TODO: Convert decoder logits (B, T, V) into log probabilities over the vocabulary axis.
     return logits-torch.logsumexp(logits, dim=-1, keepdim=True)
 
-# Step 51 - run_transformer_forward (not yet solved)
-# TODO: implement
+# Step 51 - run_transformer_forward
+def run_transformer_forward(src_ids, tgt_ids, model_params, num_heads, pad_id):
+    # model_params keys: src_embedding, tgt_embedding, encoder_layers, decoder_layers, output_projection
+    # TODO: embed src with src_embedding and tgt with tgt_embedding, add PE, build masks,
+    #       run encoder/decoder, project to log probs.
+    d_model=model_params['src_embedding'].shape[-1]
+    max_len=max(src_ids.shape[1],tgt_ids.shape[1])
+    src_embedding = scale_embeddings_by_sqrt_d_model(model_params['src_embedding'][src_ids], d_model)
+    tgt_embedding = scale_embeddings_by_sqrt_d_model(model_params['tgt_embedding'][tgt_ids], d_model)
+    pos_embedding = build_sinusoidal_positional_encoding(max_len, d_model)
+    src_embedding = add_positional_encoding_to_embeddings(src_embedding, pos_embedding)
+    tgt_embedding = add_positional_encoding_to_embeddings(tgt_embedding, pos_embedding)
+    mask_src = build_padding_mask(src_ids,pad_id)
+    mask_tgt_padding = build_padding_mask(tgt_ids,pad_id)
+    mask_tgt_causal = build_causal_mask(tgt_ids.shape[1])
+    mask_tgt = combine_padding_and_causal_masks(mask_tgt_padding, mask_tgt_causal)
+    encoder_output = stack_encoder_layers(src_embedding, model_params['encoder_layers'], num_heads, mask_src)
+    decoder_output = stack_decoder_layers(tgt_embedding, encoder_output, model_params['decoder_layers'], num_heads, mask_src, mask_tgt)
+    logits = apply_final_output_projection(decoder_output, model_params['output_projection'])
+    return apply_log_softmax_over_vocab(logits)
 
 # Step 52 - init_encoder_layer_parameters (not yet solved)
 # TODO: implement
